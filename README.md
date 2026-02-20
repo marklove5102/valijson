@@ -239,6 +239,33 @@ make
 
 Valijson can be integrated either as git submodule or with `find_package()`.
 
+### Valijson with CMake's FetchContent
+
+If you consume Valijson via `FetchContent`, you can avoid fetching Git submodules by setting `GIT_SUBMODULES` to an empty list. You will also need to keep tests and examples disabled.
+
+This is typically what you want for header-only usage:
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+  valijson
+  GIT_REPOSITORY https://github.com/tristanpenman/valijson.git
+  GIT_TAG v1.0.6
+  GIT_SHALLOW TRUE
+  GIT_SUBMODULES ""
+)
+
+set(valijson_BUILD_TESTS OFF CACHE BOOL "Don't build valijson tests" FORCE)
+set(valijson_BUILD_EXAMPLES OFF CACHE BOOL "Don't build valijson examples" FORCE)
+
+FetchContent_MakeAvailable(valijson)
+
+target_link_libraries(your-executable PRIVATE ValiJSON::valijson)
+```
+
+Including `GIT_SUBMODULES ""` keeps CMake from initializing the third-party Git submodules. These are only required for building examples and the test suite.
+
 ### Valijson as git submodule
 
 Download this repository into your project
@@ -257,7 +284,8 @@ git submodule add https://github.com/tristanpenman/valijson third-party/valijson
 Before the target add the module subdirectory in your CMakeLists.txt
 
 ```cmake
-set(valijson_BUILD_TESTS OFF CACHE BOOL "don't build valijson tests")
+set(valijson_BUILD_TESTS OFF CACHE BOOL "Don't build valijson tests" FORCE)
+set(valijson_BUILD_EXAMPLES OFF CACHE BOOL "Don't build valijson examples" FORCE)
 add_subdirectory(third-party/valijson)
 
 add_executable(your-executable ...)
